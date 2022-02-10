@@ -22,23 +22,43 @@
 
       <div class="row">
         <div class="col-md-6">
-            <img :src="'../assets/images/'+product.gambar" :alt="product.nama" class="img-fluid shadow" />
+          <img
+            :src="'../assets/images/' + product.gambar"
+            :alt="product.nama"
+            class="img-fluid shadow"
+          />
         </div>
         <div class="col-md-6">
-            <h2><strong>{{ product.nama }}</strong></h2>
-            <hr />
-            <h4>Price: <strong>Rp. {{ product.harga }}</strong></h4>
-            <form class="mt-4">
-                <div class="form-group">
-                    <label for="qty-order">Total Order</label>
-                    <input type="number" id="qty-order" class="form-control" />
-                </div>
-                <div class="form-group">
-                    <label for="desc-order">Description</label>
-                    <textarea class="form-control" id="desc-order" placeholder="Example: Dont use sambal.."></textarea>
-                </div>
-                <button type="submit" class="btn btn-success"><b-icon-cart></b-icon-cart> Order</button>
-            </form>
+          <h2>
+            <strong>{{ product.nama }}</strong>
+          </h2>
+          <hr />
+          <h4>
+            Price: <strong>Rp. {{ product.harga }}</strong>
+          </h4>
+          <form class="mt-4" v-on:submit.prevent>
+            <div class="form-group">
+              <label for="qty-order">Total Order</label>
+              <input
+                type="number"
+                id="qty-order"
+                class="form-control"
+                v-model="order.qty"
+              />
+            </div>
+            <div class="form-group">
+              <label for="desc-order">Description</label>
+              <textarea
+                class="form-control"
+                id="desc-order"
+                placeholder="Example: Dont use sambal.."
+                v-model="order.desc"
+              ></textarea>
+            </div>
+            <button type="submit" class="btn btn-success" @click="orderFood">
+              <b-icon-cart></b-icon-cart> Order
+            </button>
+          </form>
         </div>
       </div>
     </div>
@@ -57,16 +77,41 @@ export default {
   data() {
     return {
       product: {},
+      order: {},
     };
   },
   methods: {
     setProduct(data) {
       this.product = data;
     },
+    orderFood() {
+      if (this.order.qty) {
+        this.order.product = this.product;
+        axios
+          .post("http://localhost:3000/keranjangs", this.order)
+          .then(() => {
+            this.$router.push({ path: "/cart" });
+            this.$toast.success("Food has been added to cart", {
+              type: "success",
+              position: "top-right",
+              duration: 3000,
+              dismissible: true,
+            });
+          })
+          .catch((err) => console.log(err));
+      } else {
+        this.$toast.error("Please input qty order!!", {
+          type: "error",
+          position: "top-right",
+          duration: 3000,
+          dismissible: true,
+        });
+      }
+    },
   },
   mounted() {
     axios
-      .get("http://localhost:3000/products/"+this.$route.params.id)
+      .get("http://localhost:3000/products/" + this.$route.params.id)
       .then((response) => this.setProduct(response.data))
       .catch((error) => console.log("Gagal: ", error));
   },
@@ -85,7 +130,6 @@ export default {
 }
 
 .img-fluid {
-    border-radius: 15px;
+  border-radius: 15px;
 }
-
 </style>

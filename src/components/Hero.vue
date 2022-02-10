@@ -9,7 +9,7 @@
                         <div class="justify-content-center align-self-center">
                             <h2><strong>Delicious Food Menu,</strong><br> In Your Gadget</h2>
                             <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-                            <button class="btn btn-lg btn-success"><b-icon-arrow-right></b-icon-arrow-right> Find Foods</button>
+                            <router-link to="/foods" class="btn btn-lg btn-success"><b-icon-arrow-right></b-icon-arrow-right> Find Foods</router-link>
                         </div>
                     </div>
                 </div>
