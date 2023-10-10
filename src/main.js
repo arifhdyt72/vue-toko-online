@@ -9,6 +9,9 @@ import 'vue-toast-notification/dist/theme-default.css'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import './assets/css/style.css'
+import axios from 'axios';
+
+axios.defaults.baseURL = 'http://localhost:8080/api/v1/';
 
 Vue.use(VueToast)
 Vue.use(BootstrapVue)

@@ -47,10 +47,14 @@ export default {
       this.products = data
     }
   },
-  mounted() {
-    axios.get('http://localhost:3000/best-products')
-      .then((response) => this.setProduct(response.data))
+  async mounted() {
+    const response = await axios.get('best-product')
       .catch( (error) => console.log("Gagal: ", error));
+
+    if(response.data.meta.code == 200){
+      const result = response.data.data;
+      this.setProduct(result);
+    }
   }
 }
 </script>

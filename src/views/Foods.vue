@@ -64,18 +64,32 @@ export default {
     setProduct(data) {
       this.products = data;
     },
-    seachFoods() {
-      axios
-        .get("http://localhost:3000/products?q="+this.search)
-        .then((response) => this.setProduct(response.data))
-        .catch((error) => console.log("Gagal: ", error));
+    async seachFoods() {
+      let response = {};
+      if(this.search == ""){
+        response = await axios.get("products")
+      .catch((error) => console.log("Gagal: ", error));
+      }else{
+        response = await axios.get("search-products/"+this.search)
+          .catch((error) => console.log("Gagal: ", error));
+      }
+      
+      if(response.data.meta.code == 200){
+        const result = response.data.data
+        if(result != null){
+          this.setProduct(result)
+        }
+      }
     },
   },
-  mounted() {
-    axios
-      .get("http://localhost:3000/products")
-      .then((response) => this.setProduct(response.data))
+  async mounted() {
+    const response = await axios.get("products")
       .catch((error) => console.log("Gagal: ", error));
+    
+    if(response.data.meta.code == 200){
+      const result = response.data.data
+      this.setProduct(result)
+    }
   },
 };
 </script>

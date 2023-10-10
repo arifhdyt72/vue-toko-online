@@ -39,13 +39,12 @@
   </div>
 </template>
 <script>
-import axios from "axios";
 export default {
   name: "navbar",
   props: ["updateCarts"],
   data() {
     return {
-      orders: [],
+      orders: JSON.parse(localStorage.getItem("cart")),
     };
   },
   methods: {
@@ -54,10 +53,9 @@ export default {
     },
   },
   mounted() {
-    axios
-      .get("http://localhost:3000/keranjangs")
-      .then((response) => this.setProduct(response.data))
-      .catch((error) => console.log("Gagal: ", error));
+    if(this.orders == undefined || this.orders == null){
+      this.orders = [];
+    }
   },
 };
 </script>

@@ -34,29 +34,29 @@
                 <th>Action</th>
               </thead>
               <tbody>
-                <tr v-for="(cart, index) in carts" :key="cart.id">
+                <tr v-for="(cart, index) in carts" :key="cart.product.id">
                   <td>{{ index + 1 }}</td>
                   <td>
                     <img
-                      :src="'../assets/images/' + cart.product.gambar"
-                      :alt="cart.product.nama"
+                      :src="'http://localhost:8080/' + cart.product.image"
+                      :alt="cart.product.name"
                       class="img-fluid shadow"
                       width="200"
                     />
                   </td>
                   <td>
-                    <strong>{{ cart.product.nama }}</strong>
+                    <strong>{{ cart.product.name }}</strong>
                   </td>
                   <td>{{ cart.desc ? cart.desc : "-" }}</td>
                   <td>{{ cart.qty }}</td>
                   <td align="right">
-                    <strong>Rp.{{ cart.product.harga }}</strong>
+                    <strong>Rp.{{ cart.product.price }}</strong>
                   </td>
                   <td align="right">
-                    <strong>Rp.{{ cart.product.harga * cart.qty }}</strong>
+                    <strong>Rp.{{ cart.product.price * cart.qty }}</strong>
                   </td>
                   <td align="center" class="text-danger">
-                    <b-icon-trash @click="deleteCart(cart.id)"></b-icon-trash>
+                    <b-icon-trash @click="deleteCart(cart.product.id)"></b-icon-trash>
                   </td>
                 </tr>
                 <tr>
@@ -92,7 +92,7 @@
                 type="text"
                 id="table-number"
                 class="form-control"
-                v-model="order.tableNumber"
+                v-model="order.table_number"
               />
             </div>
             <button
@@ -120,56 +120,43 @@ export default {
   },
   data() {
     return {
-      carts: [],
+      carts: JSON.parse(localStorage.getItem("cart")),
       order: {},
     };
   },
   methods: {
-    setCarts(data) {
-      this.carts = data;
-    },
     deleteCart(id) {
-      axios
-        .delete("http://localhost:3000/keranjangs/" + id)
-        .then(() => {
-          this.$toast.success("Food has been deleted!", {
-            type: "success",
-            position: "top-right",
-            duration: 3000,
-            dismissible: true,
-          });
-
-          //update cart
-          axios
-            .get("http://localhost:3000/keranjangs")
-            .then((response) => this.setCarts(response.data))
-            .catch((error) => console.log("Gagal: ", error));
-        })
-        .catch((error) => console.log("Gagal: ", error));
+      this.carts = this.carts.filter((val) => val.product.id !== id);
+      localStorage.setItem("cart", JSON.stringify(this.carts))
+      this.$toast.success("Food has been deleted!", {
+        type: "success",
+        position: "top-right",
+        duration: 3000,
+        dismissible: true,
+      });
     },
-    checkoutOrder() {
-      if (this.order.name && this.order.tableNumber) {
+    async checkoutOrder() {
+      if (this.order.name && this.order.table_number) {
         this.order.total_price = this.totalPrice;
         this.order.cart = this.carts;
 
-        axios
-          .post("http://localhost:3000/pesanans", this.order)
-          .then(() => {
-            this.carts.map(function (item) {
-              return axios
-                .delete("http://localhost:3000/keranjangs/" + item.id)
-                .catch((error) => console.log("Gagal: ", error));
-            });
+        const response = await axios.post("order", this.order)
+          .catch((err) => console.log(err));
+        
+        if(response.data.meta.code == 200) {
+            this.carts = [];
+            localStorage.setItem("cart", JSON.stringify(this.carts))
 
-            this.$router.push({ path: "/checkout-success" });
             this.$toast.success("Cart has been order!", {
               type: "success",
               position: "top-right",
               duration: 3000,
               dismissible: true,
             });
-          })
-          .catch((err) => console.log(err));
+            
+            this.$router.push({ path: "/checkout-success" });
+        }
+
       } else {
         this.$toast.error("Form checkout not be empty!", {
           type: "error",
@@ -181,15 +168,14 @@ export default {
     },
   },
   mounted() {
-    axios
-      .get("http://localhost:3000/keranjangs")
-      .then((response) => this.setCarts(response.data))
-      .catch((error) => console.log("Gagal: ", error));
+    if(this.carts == undefined){
+      this.carts = [];
+    }
   },
   computed: {
     totalPrice() {
       return this.carts.reduce(function (item, data) {
-        return item + data.product.harga * data.qty;
+        return item + data.product.price * data.qty;
       }, 0);
     },
   },

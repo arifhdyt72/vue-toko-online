@@ -23,18 +23,18 @@
       <div class="row">
         <div class="col-md-6">
           <img
-            :src="'../assets/images/' + product.gambar"
-            :alt="product.nama"
+            :src="'http://localhost:8080/'+product.image"
+            :alt="product.name"
             class="img-fluid shadow"
           />
         </div>
         <div class="col-md-6">
           <h2>
-            <strong>{{ product.nama }}</strong>
+            <strong>{{ product.name }}</strong>
           </h2>
           <hr />
           <h4>
-            Price: <strong>Rp. {{ product.harga }}</strong>
+            Price: <strong>Rp. {{ product.price }}</strong>
           </h4>
           <form class="mt-4" v-on:submit.prevent>
             <div class="form-group">
@@ -78,6 +78,7 @@ export default {
     return {
       product: {},
       order: {},
+      cart: [],
     };
   },
   methods: {
@@ -87,18 +88,22 @@ export default {
     orderFood() {
       if (this.order.qty) {
         this.order.product = this.product;
-        axios
-          .post("http://localhost:3000/keranjangs", this.order)
-          .then(() => {
-            this.$router.push({ path: "/cart" });
-            this.$toast.success("Food has been added to cart", {
-              type: "success",
-              position: "top-right",
-              duration: 3000,
-              dismissible: true,
-            });
-          })
-          .catch((err) => console.log(err));
+        this.cart = JSON.parse(localStorage.getItem("cart"));
+        if(this.cart == undefined){
+          this.cart = [];
+        }
+        console.log(this.order);
+        this.cart.push(this.order);
+        console.log(this.cart);
+        localStorage.setItem("cart", JSON.stringify(this.cart));
+
+        this.$router.push({ path: "/cart" });
+        this.$toast.success("Food has been added to cart", {
+          type: "success",
+          position: "top-right",
+          duration: 3000,
+          dismissible: true,
+        });
       } else {
         this.$toast.error("Please input qty order!!", {
           type: "error",
@@ -109,11 +114,14 @@ export default {
       }
     },
   },
-  mounted() {
-    axios
-      .get("http://localhost:3000/products/" + this.$route.params.id)
-      .then((response) => this.setProduct(response.data))
+  async mounted() {
+    const response = await axios.get("product/" + this.$route.params.id)
       .catch((error) => console.log("Gagal: ", error));
+    
+    if (response.data.meta.code == 200){
+      const result = response.data.data;
+      this.setProduct(result);
+    }
   },
 };
 </script>
